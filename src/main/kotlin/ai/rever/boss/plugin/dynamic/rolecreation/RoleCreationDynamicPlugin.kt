@@ -12,7 +12,7 @@ import ai.rever.boss.plugin.api.PluginContext
 class RoleCreationDynamicPlugin : DynamicPlugin {
     override val pluginId: String = "ai.rever.boss.plugin.dynamic.rolecreation"
     override val displayName: String = "Role Creation (Dynamic)"
-    override val version: String = "1.0.5"
+    override val version: String = "1.0.1"
     override val description: String = "Create and configure custom roles and permissions"
     override val author: String = "Risa Labs"
     override val url: String = "https://github.com/risa-labs-inc/boss-plugin-role-creation"
