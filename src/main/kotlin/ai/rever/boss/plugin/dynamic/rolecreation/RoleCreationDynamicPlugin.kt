@@ -7,22 +7,32 @@ import ai.rever.boss.plugin.api.PluginContext
  * Role Creation dynamic plugin - Loaded from external JAR.
  *
  * Create and configure custom roles and permissions.
- * Uses roleManagementProvider from PluginContext.
+ * Uses RoleManagementProvider from PluginContext.
  */
 class RoleCreationDynamicPlugin : DynamicPlugin {
     override val pluginId: String = "ai.rever.boss.plugin.dynamic.rolecreation"
     override val displayName: String = "Role Creation (Dynamic)"
-    override val version: String = "1.0.1"
+    override val version: String = "1.0.2"
     override val description: String = "Create and configure custom roles and permissions"
     override val author: String = "Risa Labs"
     override val url: String = "https://github.com/risa-labs-inc/boss-plugin-role-creation"
 
     override fun register(context: PluginContext) {
+        val roleManagementProvider = context.roleManagementProvider
+
+        if (roleManagementProvider == null) {
+            // Provider not available - register stub
+            context.panelRegistry.registerPanel(RoleCreationInfo) { ctx, panelInfo ->
+                RoleCreationComponent(ctx, panelInfo, null)
+            }
+            return
+        }
+
         context.panelRegistry.registerPanel(RoleCreationInfo) { ctx, panelInfo ->
             RoleCreationComponent(
                 ctx = ctx,
                 panelInfo = panelInfo,
-                roleManagementProvider = context.roleManagementProvider
+                roleManagementProvider = roleManagementProvider
             )
         }
     }
