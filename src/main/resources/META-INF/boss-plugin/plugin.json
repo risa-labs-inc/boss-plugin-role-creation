@@ -4,6 +4,7 @@
   "displayName": "Role Creation (Dynamic)",
   "version": "1.0.3",
   "apiVersion": "1.0.5",
+  "minBossVersion": "8.16.22",
   "mainClass": "ai.rever.boss.plugin.dynamic.rolecreation.RoleCreationDynamicPlugin",
   "type": "panel",
   "description": "Create and configure custom roles and permissions",
