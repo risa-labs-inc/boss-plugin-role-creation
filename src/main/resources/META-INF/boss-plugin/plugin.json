@@ -10,7 +10,8 @@
   "description": "Create and configure custom roles and permissions",
   "author": "Risa Labs",
   "url": "https://github.com/risa-labs-inc/boss-plugin-role-creation",
-  "requiresAdmin": true,
+  "requiresAdmin": false,
+  "requiredPermissions": ["role.read", "role.create"],
   "panel": {
     "position": "right_top_bottom",
     "priority": 23
