@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
  * Main content for Role Creation panel
  */
 @Composable
-fun RoleCreationContent(viewModel: RoleCreationViewModel) {
+fun RoleCreationContent(viewModel: RoleCreationViewModel, isAdmin: Boolean) {
     val state = viewModel.state
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -67,7 +67,8 @@ fun RoleCreationContent(viewModel: RoleCreationViewModel) {
                 else -> {
                     RoleCreationMainContent(
                         state = state,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        isAdmin = isAdmin
                     )
                 }
             }
@@ -229,7 +230,8 @@ private fun RoleCreationHeader(
 @Composable
 private fun RoleCreationMainContent(
     state: RoleCreationState,
-    viewModel: RoleCreationViewModel
+    viewModel: RoleCreationViewModel,
+    isAdmin: Boolean
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -241,7 +243,8 @@ private fun RoleCreationMainContent(
             selectedRole = state.selectedRole,
             onRoleSelected = { viewModel.selectRole(it) },
             onClearSelection = { viewModel.clearSelectedRole() },
-            onDeleteRole = { viewModel.showDeleteRoleDialog(it) }
+            onDeleteRole = { viewModel.showDeleteRoleDialog(it) },
+            isAdmin = isAdmin
         )
 
         // Show permissions for selected role or all permissions
@@ -255,6 +258,7 @@ private fun RoleCreationMainContent(
                 onRemovePermission = { permission ->
                     viewModel.removePermission(state.selectedRole.name, permission)
                 },
+                isAdmin = isAdmin,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -264,6 +268,7 @@ private fun RoleCreationMainContent(
             AllPermissionsSection(
                 permissions = state.allPermissions,
                 onDeletePermission = { viewModel.showDeletePermissionDialog(it) },
+                isAdmin = isAdmin,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -281,7 +286,8 @@ private fun RoleDropdownSelector(
     selectedRole: RoleInfoData?,
     onRoleSelected: (RoleInfoData) -> Unit,
     onClearSelection: () -> Unit,
-    onDeleteRole: (RoleInfoData) -> Unit
+    onDeleteRole: (RoleInfoData) -> Unit,
+    isAdmin: Boolean
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -384,7 +390,7 @@ private fun RoleDropdownSelector(
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
-                            if (!role.isSystem) {
+                            if (!role.isSystem && isAdmin) {
                                 IconButton(
                                     onClick = {
                                         onDeleteRole(role)
@@ -415,6 +421,7 @@ private fun RoleDropdownSelector(
 private fun AllPermissionsSection(
     permissions: List<PermissionInfoData>,
     onDeletePermission: (PermissionInfoData) -> Unit,
+    isAdmin: Boolean,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -457,7 +464,7 @@ private fun AllPermissionsSection(
                 items(permissions) { permission ->
                     PermissionItemReadOnly(
                         permission = permission,
-                        onDelete = if (!permission.isSystem) {
+                        onDelete = if (!permission.isSystem && isAdmin) {
                             { onDeletePermission(permission) }
                         } else null
                     )
@@ -566,6 +573,7 @@ private fun SelectedRolePermissionsSection(
     allPermissions: List<PermissionInfoData>,
     onAssignPermission: () -> Unit,
     onRemovePermission: (String) -> Unit,
+    isAdmin: Boolean,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -594,24 +602,26 @@ private fun SelectedRolePermissionsSection(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Assign permission button
-            Button(
-                onClick = onAssignPermission,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.secondary
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Assign Permission",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Assign Permission")
-            }
+            // Assign permission button (admin-only; role.update enforced server-side)
+            if (isAdmin) {
+                Button(
+                    onClick = onAssignPermission,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.secondary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Assign Permission",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Assign Permission")
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // Permissions list
             Text(
@@ -647,7 +657,8 @@ private fun SelectedRolePermissionsSection(
                         PermissionItem(
                             permission = permission,
                             allPermissions = allPermissions,
-                            onRemove = { onRemovePermission(permission) }
+                            onRemove = { onRemovePermission(permission) },
+                            canModify = isAdmin
                         )
                     }
                 }
@@ -663,7 +674,8 @@ private fun SelectedRolePermissionsSection(
 private fun PermissionItem(
     permission: String,
     allPermissions: List<PermissionInfoData>,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    canModify: Boolean
 ) {
     val permissionInfo = allPermissions.find { it.name == permission }
     val canDelete = !(permissionInfo?.isSystem ?: false)
@@ -707,8 +719,8 @@ private fun PermissionItem(
                 }
             }
 
-            // Delete button (only if not system permission)
-            if (canDelete) {
+            // Remove button (only if not system permission AND user can modify mappings)
+            if (canDelete && canModify) {
                 IconButton(
                     onClick = onRemove,
                     modifier = Modifier.size(24.dp)

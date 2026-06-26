@@ -1,5 +1,6 @@
 package ai.rever.boss.plugin.dynamic.rolecreation
 
+import ai.rever.boss.plugin.api.AuthDataProvider
 import ai.rever.boss.plugin.api.PanelComponentWithUI
 import ai.rever.boss.plugin.api.PanelInfo
 import ai.rever.boss.plugin.api.RoleManagementProvider
@@ -10,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +28,8 @@ import com.arkivanov.essenty.lifecycle.doOnDestroy
 class RoleCreationComponent(
     ctx: ComponentContext,
     override val panelInfo: PanelInfo,
-    private val roleManagementProvider: RoleManagementProvider?
+    private val roleManagementProvider: RoleManagementProvider?,
+    private val authDataProvider: AuthDataProvider? = null
 ) : PanelComponentWithUI, ComponentContext by ctx {
 
     private val viewModel: RoleCreationViewModel? = roleManagementProvider?.let {
@@ -43,7 +46,16 @@ class RoleCreationComponent(
     override fun Content() {
         BossTheme {
             if (viewModel != null) {
-                RoleCreationContent(viewModel)
+                // Admin-only controls (delete role/permission, assign/remove permission to a
+                // role) are gated on admin status; the server enforces the same (role.update /
+                // role.delete). If auth info is unavailable, don't hide them — the server still
+                // rejects unauthorized calls.
+                val isAdmin = if (authDataProvider != null) {
+                    authDataProvider.isAdmin.collectAsState().value
+                } else {
+                    true
+                }
+                RoleCreationContent(viewModel, isAdmin = isAdmin)
             } else {
                 // Provider not available - show stub UI
                 ProviderNotAvailableContent()

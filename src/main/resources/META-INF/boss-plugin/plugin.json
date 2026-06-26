@@ -4,13 +4,14 @@
   "displayName": "Role Creation (Dynamic)",
   "version": "1.0.5",
   "apiVersion": "1.0.20",
-  "minBossVersion": "8.16.30",
+  "minBossVersion": "9.2.13",
   "mainClass": "ai.rever.boss.plugin.dynamic.rolecreation.RoleCreationDynamicPlugin",
   "type": "panel",
   "description": "Create and configure custom roles and permissions",
   "author": "Risa Labs",
   "url": "https://github.com/risa-labs-inc/boss-plugin-role-creation",
-  "requiresAdmin": true,
+  "requiresAdmin": false,
+  "requiredPermissions": ["role.read", "role.create"],
   "panel": {
     "position": "right_top_bottom",
     "priority": 23
