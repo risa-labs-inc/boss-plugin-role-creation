@@ -19,11 +19,12 @@ class RoleCreationDynamicPlugin : DynamicPlugin {
 
     override fun register(context: PluginContext) {
         val roleManagementProvider = context.roleManagementProvider
+        val authDataProvider = context.authDataProvider
 
         if (roleManagementProvider == null) {
             // Provider not available - register stub
             context.panelRegistry.registerPanel(RoleCreationInfo) { ctx, panelInfo ->
-                RoleCreationComponent(ctx, panelInfo, null)
+                RoleCreationComponent(ctx, panelInfo, null, authDataProvider)
             }
             return
         }
@@ -32,7 +33,8 @@ class RoleCreationDynamicPlugin : DynamicPlugin {
             RoleCreationComponent(
                 ctx = ctx,
                 panelInfo = panelInfo,
-                roleManagementProvider = roleManagementProvider
+                roleManagementProvider = roleManagementProvider,
+                authDataProvider = authDataProvider
             )
         }
     }
