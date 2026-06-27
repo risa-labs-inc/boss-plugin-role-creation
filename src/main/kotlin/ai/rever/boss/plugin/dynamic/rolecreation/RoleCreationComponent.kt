@@ -4,6 +4,7 @@ import ai.rever.boss.plugin.api.AuthDataProvider
 import ai.rever.boss.plugin.api.PanelComponentWithUI
 import ai.rever.boss.plugin.api.PanelInfo
 import ai.rever.boss.plugin.api.RoleManagementProvider
+import ai.rever.boss.plugin.api.SupabaseDataProvider
 import ai.rever.boss.plugin.ui.BossTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,11 +30,12 @@ class RoleCreationComponent(
     ctx: ComponentContext,
     override val panelInfo: PanelInfo,
     private val roleManagementProvider: RoleManagementProvider?,
-    private val authDataProvider: AuthDataProvider? = null
+    private val authDataProvider: AuthDataProvider? = null,
+    private val supabaseDataProvider: SupabaseDataProvider? = null
 ) : PanelComponentWithUI, ComponentContext by ctx {
 
     private val viewModel: RoleCreationViewModel? = roleManagementProvider?.let {
-        RoleCreationViewModel(it)
+        RoleCreationViewModel(it, supabaseDataProvider)
     }
 
     init {

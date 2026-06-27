@@ -267,6 +267,7 @@ private fun RoleCreationMainContent(
             // Show all permissions
             AllPermissionsSection(
                 permissions = state.allPermissions,
+                definedByPlugin = state.definedByPlugin,
                 onDeletePermission = { viewModel.showDeletePermissionDialog(it) },
                 isAdmin = isAdmin,
                 modifier = Modifier
@@ -420,6 +421,7 @@ private fun RoleDropdownSelector(
 @Composable
 private fun AllPermissionsSection(
     permissions: List<PermissionInfoData>,
+    definedByPlugin: Map<String, String>,
     onDeletePermission: (PermissionInfoData) -> Unit,
     isAdmin: Boolean,
     modifier: Modifier = Modifier
@@ -464,6 +466,7 @@ private fun AllPermissionsSection(
                 items(permissions) { permission ->
                     PermissionItemReadOnly(
                         permission = permission,
+                        definedByPlugin = definedByPlugin[permission.id],
                         onDelete = if (!permission.isSystem && isAdmin) {
                             { onDeletePermission(permission) }
                         } else null
@@ -481,6 +484,7 @@ private fun AllPermissionsSection(
 private fun PermissionItemReadOnly(
     permission: PermissionInfoData,
     onDelete: (() -> Unit)?,
+    definedByPlugin: String? = null,
     modifier: Modifier = Modifier
 ) {
     val domain = permission.name.substringBefore(".")
@@ -532,7 +536,7 @@ private fun PermissionItemReadOnly(
                 }
             }
 
-            // System badge or delete button
+            // Right side: SYSTEM badge, or "defined by <plugin>" chip + delete button
             if (permission.isSystem) {
                 Surface(
                     color = MaterialTheme.colors.secondary.copy(alpha = 0.1f),
@@ -546,17 +550,38 @@ private fun PermissionItemReadOnly(
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
-            } else if (onDelete != null) {
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(24.dp)
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colors.error,
-                        modifier = Modifier.size(14.dp)
-                    )
+                    if (definedByPlugin != null) {
+                        Surface(
+                            color = MaterialTheme.colors.primary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = "defined by ${definedByPlugin.substringAfterLast(".")}",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.primary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    if (onDelete != null) {
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colors.error,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
