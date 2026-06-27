@@ -20,11 +20,14 @@ class RoleCreationDynamicPlugin : DynamicPlugin {
     override fun register(context: PluginContext) {
         val roleManagementProvider = context.roleManagementProvider
         val authDataProvider = context.authDataProvider
+        // Used to read plugin-introduced permission provenance (plugin_permissions table)
+        // for the "defined by <plugin>" badge. May be null on older hosts.
+        val supabaseDataProvider = context.supabaseDataProvider
 
         if (roleManagementProvider == null) {
             // Provider not available - register stub
             context.panelRegistry.registerPanel(RoleCreationInfo) { ctx, panelInfo ->
-                RoleCreationComponent(ctx, panelInfo, null, authDataProvider)
+                RoleCreationComponent(ctx, panelInfo, null, authDataProvider, supabaseDataProvider)
             }
             return
         }
@@ -34,7 +37,8 @@ class RoleCreationDynamicPlugin : DynamicPlugin {
                 ctx = ctx,
                 panelInfo = panelInfo,
                 roleManagementProvider = roleManagementProvider,
-                authDataProvider = authDataProvider
+                authDataProvider = authDataProvider,
+                supabaseDataProvider = supabaseDataProvider
             )
         }
     }

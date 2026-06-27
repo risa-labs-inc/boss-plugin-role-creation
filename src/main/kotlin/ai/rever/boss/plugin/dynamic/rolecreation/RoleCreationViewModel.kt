@@ -4,6 +4,7 @@ import ai.rever.boss.plugin.api.PermissionInfoData
 import ai.rever.boss.plugin.api.RoleInfoData
 import ai.rever.boss.plugin.api.RoleManagementProvider
 import ai.rever.boss.plugin.api.RoleWithPermissionsData
+import ai.rever.boss.plugin.api.SupabaseDataProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
  * Uses RoleManagementProvider interface for data operations.
  */
 class RoleCreationViewModel(
-    private val roleManagementProvider: RoleManagementProvider
+    private val roleManagementProvider: RoleManagementProvider,
+    private val supabaseDataProvider: SupabaseDataProvider? = null
 ) {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -76,7 +78,37 @@ class RoleCreationViewModel(
                 allPermissions = permissions,
                 isLoading = false
             )
+
+            // Best-effort: load plugin-introduced permission provenance for the
+            // "defined by <plugin>" badge. Failures are silent (badge just absent).
+            val provider = supabaseDataProvider
+            if (provider != null) {
+                val provenance = runCatching {
+                    provider.select("plugin_permissions", "permission_id,plugin_id")
+                        .getOrNull()?.let { parsePluginPermissions(it) } ?: emptyMap()
+                }.getOrDefault(emptyMap())
+                if (provenance.isNotEmpty()) {
+                    state = state.copy(definedByPlugin = provenance)
+                }
+            }
         }
+    }
+
+    /**
+     * Parse the JSON array returned by SupabaseDataProvider.select("plugin_permissions",
+     * "permission_id,plugin_id") into a map of permissionId -> pluginId. Tolerant of
+     * field order; no JSON dependency (controlled two-field Postgrest shape).
+     */
+    private fun parsePluginPermissions(json: String): Map<String, String> {
+        val regex = Regex(
+            "\"permission_id\"\\s*:\\s*\"([^\"]+)\"[^}]*?\"plugin_id\"\\s*:\\s*\"([^\"]*)\"" +
+                "|\"plugin_id\"\\s*:\\s*\"([^\"]*)\"[^}]*?\"permission_id\"\\s*:\\s*\"([^\"]+)\""
+        )
+        return regex.findAll(json).mapNotNull { m ->
+            val permId = m.groupValues[1].ifEmpty { m.groupValues[4] }
+            val pluginId = m.groupValues[2].ifEmpty { m.groupValues[3] }
+            if (permId.isNotEmpty() && pluginId.isNotEmpty()) permId to pluginId else null
+        }.toMap()
     }
 
     /**
@@ -462,6 +494,8 @@ class RoleCreationViewModel(
 data class RoleCreationState(
     val allRoles: List<RoleInfoData> = emptyList(),
     val allPermissions: List<PermissionInfoData> = emptyList(),
+    /** permissionId -> pluginId for plugin-introduced permissions (the "defined by" badge). */
+    val definedByPlugin: Map<String, String> = emptyMap(),
     val selectedRole: RoleInfoData? = null,
     val selectedRolePermissions: RoleWithPermissionsData? = null,
     val isLoading: Boolean = false,
