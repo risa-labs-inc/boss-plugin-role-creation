@@ -5,6 +5,7 @@ import ai.rever.boss.plugin.api.RoleInfoData
 import ai.rever.boss.plugin.api.RoleWithPermissionsData
 import ai.rever.boss.plugin.scrollbar.getPanelScrollbarConfig
 import ai.rever.boss.plugin.scrollbar.lazyListScrollbar
+import ai.rever.boss.plugin.ui.BossThemeColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.clickable
@@ -775,7 +776,7 @@ private fun BoxScope.SuccessMessage(
             .align(Alignment.BottomCenter)
             .padding(16.dp)
             .clickable(onClick = onDismiss),
-        backgroundColor = Color(0xFF4CAF50),
+        backgroundColor = BossThemeColors.SuccessColor,
         elevation = 8.dp
     ) {
         Row(
@@ -815,7 +816,7 @@ private fun BoxScope.ErrorMessage(
             .align(Alignment.BottomCenter)
             .padding(16.dp)
             .clickable(onClick = onDismiss),
-        backgroundColor = Color(0xFFF44336),
+        backgroundColor = BossThemeColors.ErrorColor,
         elevation = 8.dp
     ) {
         Row(
