@@ -104,9 +104,13 @@ internal class RoleCreationMcpToolProvider(
         ),
     ).onEach { it.requiredPermissions = permissionsFor(it.name) }
 
-    // RBAC gate (admins bypass): reads need role.read; creating/deleting/granting needs role.create.
+    // RBAC gate (admins bypass), aligned with the SERVER RPC authorization so a
+    // visible tool never gets a guaranteed server rejection: reads → role.read;
+    // create → role.create; delete → role.delete; grant/revoke → role.update.
     private fun permissionsFor(tool: String): List<String> = when (tool) {
         "permissions_list", "role_permissions" -> listOf("role.read")
+        "role_delete" -> listOf("role.delete")
+        "role_grant_permission", "role_revoke_permission" -> listOf("role.update")
         else -> listOf("role.create")
     }
 
