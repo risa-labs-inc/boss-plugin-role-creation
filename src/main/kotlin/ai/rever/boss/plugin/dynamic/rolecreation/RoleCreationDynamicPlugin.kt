@@ -41,5 +41,8 @@ class RoleCreationDynamicPlugin : DynamicPlugin {
                 supabaseDataProvider = supabaseDataProvider
             )
         }
+
+        // Contribute role/permission management MCP tools; auto-removed on disable/unload.
+        context.registerMcpToolProvider(RoleCreationMcpToolProvider(pluginId, roleManagementProvider))
     }
 }
