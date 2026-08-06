@@ -1,5 +1,7 @@
 package ai.rever.boss.plugin.dynamic.rolecreation
 
+import ai.rever.boss.plugin.ui.BossAlertDialog
+import ai.rever.boss.plugin.ui.BossDialog
 import ai.rever.boss.plugin.api.PermissionInfoData
 import ai.rever.boss.plugin.api.RoleInfoData
 import ai.rever.boss.plugin.scrollbar.getPanelScrollbarConfig
@@ -24,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 
 /**
  * Dialog for creating a new role
@@ -39,7 +40,7 @@ fun CreateRoleDialog(
     var description by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
-    Dialog(onDismissRequest = onDismiss) {
+    BossDialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .width(400.dp)
@@ -163,7 +164,7 @@ fun CreatePermissionDialog(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    BossDialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .width(400.dp)
@@ -300,7 +301,7 @@ fun AssignPermissionDialog(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    BossDialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .width(450.dp)
@@ -465,7 +466,7 @@ fun DeleteRoleDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    AlertDialog(
+    BossAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(
@@ -592,7 +593,7 @@ fun DeletePermissionDialog(
     val domain = permission.name.substringBefore(".")
     val action = permission.name.substringAfter(".")
 
-    AlertDialog(
+    BossAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(
